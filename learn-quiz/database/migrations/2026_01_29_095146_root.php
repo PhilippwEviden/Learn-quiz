@@ -13,20 +13,15 @@ return new class extends Migration
     {
         Schema::create('cards', function (Blueprint $table) {
             $table->id();
-            $table->string('Front');
-            $table->text('Back');
-            $table->timestamps();
-        });
-        SChema::create('decks', function (Blueprint $table) {
-            $table->id();
-            $table->string('Name');
-            $table->text('Description')->nullable();
-            $table->timestamps();
-        });
-        Schema::create('deck_card', function (Blueprint $table) {
-            $table->id();
+            $table->string('expression');
+            $table->text('definition');
             $table->foreignId('deck_id')->constrained('decks')->onDelete('cascade');
-            $table->foreignId('card_id')->constrained('cards')->onDelete('cascade');
+            $table->timestamps();
+        });
+        Schema::create('decks', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
         Schema::create('card_user', function (Blueprint $table) {

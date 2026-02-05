@@ -30,6 +30,14 @@ new class extends Component
         $user->name = $this->username;
         $user->password = bcrypt($this->password);
         $user->save();
+
+        if (Auth::attempt(['name' => $this->username, 'password' => $this->password])) {
+            session()->regenerate();
+            return redirect()->intended('/');
+        }
+        throw ValidationException::withMessages([
+            'login' => 'The provided credentials do not match our records.',
+        ]);
     }
 };
 ?>
@@ -52,6 +60,6 @@ new class extends Component
     </div>
     <div class="space-y-2 flex flex-col">
         <flux:button variant="primary" class="w-full" wire:click="Signup">Signup</flux:button>
-        <flux:link href="/Login" variant="subtle" class="mx-auto">Login</flux:link>
+        <flux:link href="/login" variant="subtle" class="mx-auto">Login</flux:link>
     </div>
 </flux:card>

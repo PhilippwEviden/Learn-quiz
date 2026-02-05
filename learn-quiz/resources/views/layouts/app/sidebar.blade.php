@@ -3,57 +3,47 @@
     <head>
         @include('partials.head')
     </head>
-   <body 
-    x-data="{ 
-        sidebarOpen: window.innerWidth > 1024,
-        isDesktop: window.innerWidth > 1024 
-    }" 
-    {{-- Update isDesktop state if the user resizes their browser --}}
-    @resize.window="isDesktop = window.innerWidth > 1024"
-    class="min-h-screen bg-white dark:bg-zinc-800 relative"
->
-    
-    <div 
-        x-show="!sidebarOpen" 
-        x-transition
-        class="absolute top-4 left-4 z-[60]"
-    >
-    <flux:sidebar.header>
-            <flux:sidebar.collapse @click="sidebarOpen = true" />
-        </flux:sidebar.header>
-    </div>
-
-    <div 
-        x-show="sidebarOpen" 
-        x-cloak
-        {{-- Only close on click-away IF we are NOT on desktop --}}
-        @click.away="if (!isDesktop) sidebarOpen = false"
-        
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="-translate-x-full"
-        x-transition:enter-end="translate-x-0"
-        x-transition:leave="transition ease-in duration-300"
-        x-transition:leave-start="translate-x-0"
-        x-transition:leave-end="-translate-x-full"
-
-         
-        class="fixed inset-y-0 left-0 z-50 w-64 shadow-2xl bg-zinc-900 border-r border-zinc-700"
-    >
-        <flux:sidebar.header class="mx-4 mt-4 mb-2">
-            <flux:sidebar.collapse @click="sidebarOpen = false" />
-        </flux:sidebar.header>
-
-        <flux:sidebar.nav>
-            <flux:sidebar.item icon="home" href="#" current>Home</flux:sidebar.item>
-        </flux:sidebar.nav>
-    </div>
-
-    {{-- If sidebar is relative (desktop), this will naturally sit next to it. 
-         If sidebar is fixed (mobile), this will fill the screen. --}}
-    <main class="flex-1">
-        {{ $slot }}
-    </main>
-
-    @fluxScripts
-</body>
+    <body class="min-h-screen bg-white dark:bg-zinc-800 antialiased lg:flex">
+        <flux:sidebar sticky collapsible class="bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-700">
+            <flux:sidebar.header>
+                <flux:sidebar.collapse class="mr-2 !opacity-100" />
+            </flux:sidebar.header>
+            <flux:sidebar.nav>
+                <flux:sidebar.item icon="home" href="/" current>Home</flux:sidebar.item>
+                <flux:sidebar.item icon="inbox" badge="12" href="#">Inbox</flux:sidebar.item>
+                <flux:sidebar.item icon="document-text" href="#">Documents</flux:sidebar.item>
+                <flux:sidebar.item icon="calendar" href="#">Calendar</flux:sidebar.item>
+                <flux:sidebar.group expandable icon="star" heading="Favorites" class="grid">
+                    <flux:sidebar.item href="#">Marketing site</flux:sidebar.item>
+                    <flux:sidebar.item href="#">Android app</flux:sidebar.item>
+                    <flux:sidebar.item href="#">Brand guidelines</flux:sidebar.item>
+                </flux:sidebar.group>
+            </flux:sidebar.nav>
+            <flux:sidebar.spacer />
+            <flux:sidebar.nav>
+                <flux:sidebar.item icon="cog-6-tooth" href="#">Settings</flux:sidebar.item>
+                <flux:sidebar.item icon="information-circle" href="#">Help</flux:sidebar.item>
+            </flux:sidebar.nav>
+            <flux:dropdown position="top" align="start" class="max-lg:hidden">
+                <flux:sidebar.profile avatar="https://fluxui.dev/img/demo/user.png" name="{{ Auth::user()->name ?? 'Guest'}}" />
+                <flux:menu>
+                    <flux:menu.item icon="arrow-right-start-on-rectangle" href="/logout">Logout</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
+        </flux:sidebar>
+        <flux:header class="lg:hidden">
+            <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
+            <flux:spacer />
+            <flux:dropdown position="top" align="start">
+                <flux:profile avatar="/img/demo/user.png" />
+                <flux:menu>
+                    <flux:menu.item icon="arrow-right-start-on-rectangle" href="/logout">Logout</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
+        </flux:header>
+        <main class="flex-1 flex justify-center p-6">
+            {{ $slot }}
+        </main>
+        @fluxScripts
+    </body>
 </html>

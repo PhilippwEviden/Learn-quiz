@@ -16,3 +16,5 @@ Route::livewire('/login', 'pages::login')->name('login');
 Route::livewire('/signup', 'pages::signup')->name('signup');
 Route::livewire('/deck/create', 'pages::deck.create')->name('deck.create');
 Route::livewire('/deck/{deck}', 'pages::deck.view')->name('deck.view');
+Route::livewire('/deck/{deck}/mc-learn', 'pages::deck.mc-learn')->name('deck.mc-learn');
+Route::livewire('/deck/{deck}/flashcards', 'pages::deck.flashcards')->name('deck.flashcards');

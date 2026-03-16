@@ -21,7 +21,15 @@ new class extends Component
     }
 
     public function addCard() {
-        $this->mcCards[] = ['question' => '', 'answer1' => '', 'answer2' => '', 'answer3' => '', 'answer4' => '', 'correct_answer' => 0];
+        $this->mcCards[] = [
+        'question' => '', 
+        'answers' => [
+            ['text' => '', 'is_correct' => false],
+            ['text' => '', 'is_correct' => false],
+            ['text' => '', 'is_correct' => false],
+            ['text' => '', 'is_correct' => false],
+        ]
+    ];
         $this->cards[] = ['expression' => '', 'definition' => ''];
     }
     public function saveDeck() {
@@ -46,17 +54,17 @@ new class extends Component
         }
         else {
             foreach($this->mcCards as $cardData) {
-                $content = MultipleChoiceCard::create([
+                $mcCard = MultipleChoiceCard::create([
                     'question' => $cardData['question'],
-                    'answer1' => $cardData['answer1'],
-                    'answer2' => $cardData['answer2'],
-                    'answer3' => $cardData['answer3'],
-                    'answer4' => $cardData['answer4'],
-                    'correct_answer' => (int) $cardData['correct_answer'],
                 ]);
-
+                foreach($cardData['answers'] as $answerData) {
+                    $mcCard->answers()->create([
+                        'answer_text' => $answerData['text'],
+                        'is_correct' => $answerData['is_correct']
+                    ]);
+                }
                 // 2. Create the polymorphic bridge
-                $content->card()->create(['deck_id' => $deck->id]);
+                $mcCard->card()->create(['deck_id' => $deck->id]);
             }
         }
         Auth::user()->decks()->syncWithoutDetaching([$deck->id]);
@@ -93,21 +101,24 @@ new class extends Component
         @else
             @foreach ($mcCards as $index => $card)
                 <flux:card class="space-y-4">
-                    <flux:input label="Question" wire:model.live="mcCards.{{ $index }}.question"/>
-                    
-                    <flux:radio.group wire:model.live="mcCards.{{ $index }}.correct_answer" class="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2">
-                        <flux:radio value="1" />
-                        <flux:input placeholder="Answer 1" wire:model.live="mcCards.{{ $index }}.answer1"/>
-                        
-                        <flux:radio value="2" />
-                        <flux:input placeholder="Answer 2" wire:model.live="mcCards.{{ $index }}.answer2"/>
-                        
-                        <flux:radio value="3" />
-                        <flux:input placeholder="Answer 3" wire:model.live="mcCards.{{ $index }}.answer3"/>
-                        
-                        <flux:radio value="4" />
-                        <flux:input placeholder="Answer 4" wire:model.live="mcCards.{{ $index }}.answer4"/>
-                    </flux:radio.group>
+                    <div class="flex justify-between items-center">
+                        <flux:button variant="ghost" icon="trash" wire:click="removeCard({{ $index }})" />
+                    </div>
+                    <flux:input label="Question" wire:model="mcCards.{{ $index }}.question" />
+                    <div class="space-y-3">
+                        <flux:label>Answers</flux:label>
+                        @foreach($mcCards[$index]['answers'] as $answerIndex => $answer)
+                            <div class="grid grid-cols-[auto_1fr] items-center gap-x-3">
+                                <flux:checkbox 
+                                    wire:model="mcCards.{{ $index }}.answers.{{ $answerIndex }}.is_correct" 
+                                />
+                                <flux:input 
+                                    placeholder="Answer option..." 
+                                    wire:model="mcCards.{{ $index }}.answers.{{ $answerIndex }}.text" 
+                                />
+                            </div>
+                        @endforeach
+                    </div>
                 </flux:card>
             @endforeach
         @endif

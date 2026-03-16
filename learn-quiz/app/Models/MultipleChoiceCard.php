@@ -19,4 +19,7 @@ class MultipleChoiceCard extends Model
     {
         return $this->morphOne(Card::class, 'cardable');
     }
+    public function answers() {
+        return $this->hasMany(Answer::class);
+    }
 }

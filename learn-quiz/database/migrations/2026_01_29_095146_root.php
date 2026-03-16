@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('cards', function (Blueprint $table) {
             $table->id();
             $table->foreignId('deck_id')->constrained()->onDelete('cascade');
-            // These two columns are the magic:
-            $table->unsignedBigInteger('cardable_id');   // The ID of the MC or Basic card
-            $table->string('cardable_type');             // The Class Name (e.g., 'App\Models\MultipleChoiceCard')
+            $table->unsignedBigInteger('cardable_id');   
+            $table->string('cardable_type');             
             $table->timestamps();
         });
         Schema::create('basic_cards', function (Blueprint $table) {
@@ -24,15 +23,19 @@ return new class extends Migration
             $table->string('expression');
             $table->string('definition');
             $table->timestamps();
-        });
+        });  
         Schema::create('multiple_choice_cards', function (Blueprint $table) {
             $table->id();
             $table->string('question');
-            $table->text('answer1');
-            $table->text('answer2')->nullable();
-            $table->text('answer3')->nullable();
-            $table->text('answer4')->nullable();
-            $table->integer('correct_answer'); // 1, 2, 3, or 4
+            $table->timestamps();
+        });
+         Schema::create('answers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('multiple_choice_card_id')
+                ->constrained()
+                ->onDelete('cascade');
+            $table->text('answer_text');
+            $table->boolean('is_correct')->default(false);
             $table->timestamps();
         });
         Schema::create('decks', function (Blueprint $table) {
@@ -68,8 +71,10 @@ return new class extends Migration
     {
         Schema::dropIfExists('deck_user');
         Schema::dropIfExists('card_user');
-        Schema::dropIfExists('deck_card');
-        Schema::dropIfExists('decks');
+        Schema::dropIfExists('answers');
+        Schema::dropIfExists('multiple_choice_cards');
+        Schema::dropIfExists('basic_cards');
         Schema::dropIfExists('cards');
+        Schema::dropIfExists('decks');
     }
 };

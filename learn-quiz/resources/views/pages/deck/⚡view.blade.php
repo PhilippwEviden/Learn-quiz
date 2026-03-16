@@ -42,7 +42,7 @@ new class extends Component
 <div>
     <div class="flex justify-between items-center mb-4">
     <flux:header class="text-2xl mb-4">{{ $this->deck->name }}</flux:header>
-    <flux:button >Edit</flux:button>
+    <flux:button href="/deck/edit/{{ $this->deck->id }}">Edit</flux:button>
     </div>
     <flux:text class="mb-6">{{ $this->deck->description }}</flux:text>
 

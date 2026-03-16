@@ -3,21 +3,49 @@
 use Livewire\Component;
 use App\Models\BasicCard;
 use App\Models\MultipleChoiceCard;
+use App\Models\Deck;
 
 new class extends Component
 {
+    public $deck;
     public $cards = [];
     public $mcCards = [];
     public string $name = '';
     public string $description = '';
     public string $type = 'multiple_choice';
+    public string $mode = 'create'; // 'create' or 'edit'
 
     public function mount() 
     {   
         if(!auth()->user()) {
             return redirect()->intended('/login');
         }
-        $this->addCard();
+        if(request()->deck) {
+            $this->deck = Deck::find(request()->deck);
+            $this->mode = 'edit';
+            $this->name = $this->deck->name;
+            $this->description = $this->deck->description;
+            $this->type = $this->deck->cards->first()->cardable_type === 'App\Models\MultipleChoiceCard' ? 'multiple_choice' : 'flashcards';
+            $this->cards = $this->deck->cards()->where('cardable_type', 'App\Models\BasicCard')->get()->map(function($card) {
+                return [
+                    'expression' => $card->cardable->expression,
+                    'definition' => $card->cardable->definition
+                ];
+            })->toArray();
+            $this->mcCards = $this->deck->cards()->where('cardable_type', 'App\Models\MultipleChoiceCard')->get()->map(function($card) {
+                return [
+                    'question' => $card->cardable->question,
+                    'answers' => $card->cardable->answers->map(function($answer) {
+                        return [
+                            'text' => $answer->answer_text,
+                            'is_correct' => $answer->is_correct
+                        ];
+                    })->toArray()
+                ];
+            })->toArray();
+        } else {
+            $this->addCard();
+        }
     }
 
     public function addCard() {
@@ -32,24 +60,31 @@ new class extends Component
     ];
         $this->cards[] = ['expression' => '', 'definition' => ''];
     }
+
     public function saveDeck() {
 
         $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string'
         ]);
+        if($this->mode === 'edit') {
+            // For simplicity, we'll delete existing cards and recreate them
+            $this->deck->cards()->delete();
+        } else {
+            $this->deck = new \App\Models\Deck();
+            $this->deck->save();
+        }
 
-        $deck = new \App\Models\Deck();
-        $deck->name = $this->name;
-        $deck->description = $this->description ?? '';
-        $deck->save();
+        $this->deck->name = $this->name;
+        $this->deck->description = $this->description ?? '';
+
         if($this->type === 'flashcards'){
             foreach($this->cards as $cardData) {
                 $card = BasicCard::create([
                     'expression' => $cardData['expression'],
                     'definition' => $cardData['definition'],
                 ]);
-                $card->card()->create(['deck_id' => $deck->id]);
+                $card->card()->create(['deck_id' => $this->deck->id]);
             }
         }
         else {
@@ -64,11 +99,20 @@ new class extends Component
                     ]);
                 }
                 // 2. Create the polymorphic bridge
-                $mcCard->card()->create(['deck_id' => $deck->id]);
+                $mcCard->card()->create(['deck_id' => $this->deck->id]);
             }
         }
-        Auth::user()->decks()->syncWithoutDetaching([$deck->id]);
+        Auth::user()->decks()->syncWithoutDetaching([$this->deck->id]);
         return redirect()->to('/');
+    }
+    public function removeCard($index) {
+        if($this->type === 'flashcards') {
+            unset($this->cards[$index]);
+            $this->cards = array_values($this->cards);
+        } else {
+            unset($this->mcCards[$index]);
+            $this->mcCards = array_values($this->mcCards);
+        }
     }
 };
 ?>

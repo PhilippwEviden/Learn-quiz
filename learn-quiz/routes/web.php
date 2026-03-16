@@ -14,7 +14,10 @@ Route::get('/logout', Logout::class)->name('logout');
 Route::livewire('/', 'pages::home')->name('home');
 Route::livewire('/login', 'pages::login')->name('login');
 Route::livewire('/signup', 'pages::signup')->name('signup');
-Route::livewire('/deck/create', 'pages::deck.create')->name('deck.create');
+
+Route::livewire('/deck/create', 'pages::deck.create-and-edit')->name('deck.create');
+Route::livewire('/deck/edit/{deck}', 'pages::deck.create-and-edit')->name('deck.edit');
+
 Route::livewire('/deck/{deck}', 'pages::deck.view')->name('deck.view');
 Route::livewire('/deck/{deck}/mc-learn', 'pages::deck.mc-learn')->name('deck.mc-learn');
 Route::livewire('/deck/{deck}/flashcards', 'pages::deck.flashcards')->name('deck.flashcards');

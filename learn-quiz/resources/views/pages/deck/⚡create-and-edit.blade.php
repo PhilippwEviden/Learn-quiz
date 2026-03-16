@@ -8,11 +8,11 @@ use App\Models\Deck;
 new class extends Component
 {
     public $deck;
-    public $cards = [];
-    public $mcCards = [];
+    public $cards = []; // for flashcards
+    public $mcCards = []; // multiple choice cards
     public string $name = '';
-    public string $description = '';
-    public string $type = 'multiple_choice';
+    public string $description = ''; 
+    public string $type = 'multiple_choice'; // 'multiple_choice' or 'flashcards'
     public string $mode = 'create'; // 'create' or 'edit'
 
     public function mount() 
@@ -20,12 +20,16 @@ new class extends Component
         if(!auth()->user()) {
             return redirect()->intended('/login');
         }
+        //if deck param is present, we're in edit mode, otherwise create mode
         if(request()->deck) {
+            //get deck and populate properties for editing
             $this->deck = Deck::find(request()->deck);
             $this->mode = 'edit';
             $this->name = $this->deck->name;
             $this->description = $this->deck->description;
             $this->type = $this->deck->cards->first()->cardable_type === 'App\Models\MultipleChoiceCard' ? 'multiple_choice' : 'flashcards';
+            // Load existing cards into the respective arrays based on their type
+
             $this->cards = $this->deck->cards()->where('cardable_type', 'App\Models\BasicCard')->get()->map(function($card) {
                 return [
                     'expression' => $card->cardable->expression,
@@ -43,6 +47,7 @@ new class extends Component
                     })->toArray()
                 ];
             })->toArray();
+        
         } else {
             $this->addCard();
         }

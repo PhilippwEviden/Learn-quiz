@@ -2,11 +2,13 @@
 
 use Livewire\Component;
 use App\Http\Controllers\LoginController;
+use Illuminate\Validation\ValidationException;
 
 new class extends Component
 {
     public string $initials = '';
     public string $password = '';
+    public string $errorMessage = '';
 
     public function login() {
         $credentials = $this->validate([
@@ -20,7 +22,7 @@ new class extends Component
             return redirect()->intended('/');
         }
         throw ValidationException::withMessages([
-            'login' => 'The provided credentials do not match our records.',
+            $this->errorMessage = 'The provided credentials do not match our records.',
         ]);
 
     }
@@ -44,6 +46,9 @@ new class extends Component
         </flux:field>
     </div>
     <div class="space-y-2 flex flex-col">
+        @if($errorMessage)
+            <flux:error :message="$errorMessage" />
+        @endif
         <flux:button variant="primary" class="w-full" wire:click="login">Log in</flux:button>
         <flux:link href="/signup" variant="subtle" class="mx-auto">Create new account</flux:link>
     </div>

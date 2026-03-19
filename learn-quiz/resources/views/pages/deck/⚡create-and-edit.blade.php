@@ -57,8 +57,15 @@ new class extends Component
     }
 
     public function addCard() {
+        if ($this->type === 'flashcards') {
+            $this->addFlashCard();
+        } else {
+            $this->addMCCard();
+        }
+    }
+    public function addFlashCard() {
         $this->cards[] = [
-            'type' => 'flashcards', // default to flashcard, can be changed later
+            'type' => 'flashcards',
             'expression' => '',
             'definition' => ''
         ];
@@ -158,12 +165,17 @@ new class extends Component
             <flux:heading size="lg">Create a new Deck</flux:heading>
             <flux:text class="mt-2">Organize your learning by creating a new deck.</flux:text>
         </div>
-        <flux:button.group class="justify-end">
-            <flux:button icon="list-bullet" title="multiple choice" wire:click="$set('type', 'multiple_choice')"
-                :variant="$type === 'multiple_choice' ? 'primary' : 'ghost'"></flux:button>
-            <flux:button icon="credit-card" title="flashcards" wire:click="$set('type', 'flashcards')"
-                :variant="$type === 'flashcards' ? 'primary' : 'ghost'"></flux:button>
-        </flux:button.group>
+        <div class="flex flex-row justify-end items-center">
+            <div class="justify-end items-center hidden md:flex pe-4">
+                    default:
+            </div>
+            <flux:button.group class="justify-end">
+                <flux:button icon="list-bullet" title="multiple choice" wire:click="$set('type', 'multiple_choice')"
+                    :variant="$type === 'multiple_choice' ? 'primary' : 'ghost'"></flux:button>
+                <flux:button icon="credit-card" title="flashcards" wire:click="$set('type', 'flashcards')"
+                    :variant="$type === 'flashcards' ? 'primary' : 'ghost'"></flux:button>
+            </flux:button.group>
+        </div>
     </div>
 
     <div class="space-y-6">
